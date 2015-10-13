@@ -16,19 +16,22 @@ grass = None
 font = None
 
 
-class background:
+
+class Grass:
     def __init__(self):
-        self.image = load_image('2d image/2dsource/stage2.png')
+        self.image = load_image('grass.png')
 
     def draw(self):
-        self.image.draw(800, 450)
+        self.image.draw(400, 30)
+
+
 
 class Boy:
     def __init__(self):
         self.x, self.y = 0, 90
         self.frame = 0
         self.image = load_image('run_animation.png')
-        self.dir = 1    #방향
+        self.dir = 1
 
     def update(self):
         self.frame = (self.frame + 1) % 8
@@ -41,18 +44,22 @@ class Boy:
     def draw(self):
         self.image.clip_draw(self.frame * 100, 0, 100, 100, self.x, self.y)
 
+
 def enter():
-    global boy, Bg
-    mainch = Boy()
-    Bg = background()
+    global boy, grass
+    boy = Boy()
+    grass = Grass()
+
 
 def exit():
     global boy, grass
     del(boy)
     del(grass)
 
+
 def pause():
     pass
+
 
 def resume():
     pass
