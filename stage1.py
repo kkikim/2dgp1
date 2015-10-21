@@ -12,8 +12,12 @@ name = "stage1"
 mainch = None
 Bg = None
 font = None
-Fireball = list()
+Fireball = list()   #리스트
+Fireball2 = list()
+fireball_ch = None     #변수
+fireball2_ch = None
 
+#global mainch
 
 class background:
     def __init__(self):
@@ -43,11 +47,12 @@ class bullet:
     def draw(self):
         self.bulletimage.draw(self.x,self.y)
 
-
 class Mainch:
-
-    LEFT_RUN, RIGHT_RUN, LEFT_STAND,RIGHT_STAND, UP_RUN, DOWN_RUN = 0, 1, 2, 3, 4, 5
+    LEFT_RUN, RIGHT_RUN, LEFT_STAND,RIGHT_STAND, UP_RUN, DOWN_RUN, UP_RUN2, DOWN_RUN2 = 0, 1, 2, 3, 4, 5,6,7
     KEY_DOWN_STATE, KEY_UP_STATE = 6,7
+
+    global fireball_ch
+
 
     def __init__(self):
 
@@ -84,8 +89,8 @@ class Mainch:
             boostspeed = 5
         elif self.boost == False:
             boostspeed=0
-        if self.keyState == self.KEY_DOWN_STATE:
-                Fireball.append(fireball())
+        #if self.keyState == self.KEY_DOWN_STATE:
+                #Fireball.append(fireball())
         if self.state == self.RIGHT_RUN:
             self.x = min(1580, self.x + 5+boostspeed)
         elif self.state == self.LEFT_RUN:
@@ -94,13 +99,8 @@ class Mainch:
             self.y = min(880, self.y + 5+boostspeed)
         elif self.state == self.DOWN_RUN:
             self.y = max(60, self.y - 5-boostspeed)
-        # for문을 통해 리스트 전체를 업데이트
-        for i in Fireball:
-            if i.x != 800:
-                i.update()
-
-
         pass
+
     def handle_event(self, event):
         #    부스터키
         if (event.type, event.key) == (SDL_KEYDOWN, SDLK_v):
@@ -109,11 +109,14 @@ class Mainch:
             self.boost = False
 
         #   파이어볼
-        if (event.type, event.key) == (SDL_KEYDOWN, SDLK_x):
-            self.keyState = self.KEY_DOWN_STATE
-        if (event.type, event.key) == (SDL_KEYUP, SDLK_x):
-             self.keyState = self.KEY_UP_STATE
-             pass
+        if self.state in (self.RIGHT_RUN, self.RIGHT_STAND ):
+            if (event.type, event.key) == (SDL_KEYDOWN, SDLK_x):
+                fireball_ch.direction =1
+                Fireball.append(fireball(fireball_ch.direction))
+        if self.state in (self.LEFT_RUN, self.LEFT_STAND ):
+            if (event.type, event.key) == (SDL_KEYDOWN, SDLK_x):
+                fireball_ch.direction =0
+                Fireball.append(fireball(fireball_ch.direction))
 
         #     방향키
         if (event.type, event.key) == (SDL_KEYDOWN, SDLK_LEFT):
@@ -157,7 +160,6 @@ class Mainch:
             elif self.state==self.DOWN_RUN:
                 self.dashimage4.clip_draw(self.dashframe*100,0,100,100,self.x, self.y)
 
-
         elif self.boost ==False :
             if self.state==self.RIGHT_STAND:
                 self.standimage.clip_draw(self.standframe * 100, 0, 100, 100, self.x, self.y)
@@ -168,40 +170,51 @@ class Mainch:
             elif self.state== self.LEFT_RUN:
                 self.image2.clip_draw(self.frame * 100, 0, 100, 100, self.x, self.y)
             elif self.state== self.UP_RUN:
-                self.image3.clip_draw(self.frame * 100, 0, 100, 100, self.x, self.y)
+                if self.x <800:
+                    self.image.clip_draw(self.frame * 100, 0, 100, 100, self.x, self.y)
+                elif self.x>800 :
+                   self.image2.clip_draw(self.frame * 100, 0, 100, 100, self.x, self.y)
             elif self.state== self.DOWN_RUN:
-                self.image4.clip_draw(self.frame * 100, 0, 100, 100, self.x, self.y)
-        for i in Fireball:
-            if i.x != 800:
-                i.draw()
+                if self.x <800:
+                    self.image.clip_draw(self.frame * 100, 0, 100, 100, self.x, self.y)
+                elif self.x>800 :
+                   self.image2.clip_draw(self.frame * 100, 0, 100, 100, self.x, self.y)
 
 class fireball:
     global mainch
-    def __init__(self):
-        self.x,self.y = mainch.x, mainch.y
+    def __init__(self, dir):
+        self.x2, self.y2 = self.x,self.y = mainch.x, mainch.y
         self.fireballframe = 0
-        self.fireballimage = load_image('2d image/2dsource/fire_ball.png')      #오른쪽에서 왼쪽으로 갈때
-        self.fireballimage2 = load_image('2d image/2dsource/fire_ball2.png')    #왼쪽에서 오른쪽으로 갈때
+        self.image = load_image('2d image/2dsource/fire_ball.png')
+#rotate_draw
+        self.direction = dir
+        if dir == 1 :
+            self.image = load_image('2d image/2dsource/fire_ball2.png')      #오른쪽에서 왼쪽으로 갈때
+        elif dir == 0 :
+            self.direction = -1
+
     def update(self):
         self.fireballframe = (self.fireballframe +1)%8
-        self.x +=5
-
+        self.x += (5 * self.direction)
 
     def draw(self):
-        self.fireballimage2.clip_draw(self.fireballframe*96,0,96,96,self.x,self.y)
+        if mainch.state in (mainch.RIGHT_STAND, mainch.RIGHT_RUN, mainch.UP_RUN,mainch.DOWN_RUN, mainch.LEFT_STAND, mainch.LEFT_RUN):
+            self.image.clip_draw(self.fireballframe*96,0,96,96,self.x,self.y)
 
 def enter():
     open_canvas(1600,900)
-    global mainch, Bg, boss
+    global mainch, Bg, boss,fireball_ch
     mainch = Mainch()
     Bg = background()
     boss = boss1()
+    fireball_ch = fireball(1)
 
 def exit():
-    global mainch, Bg, boss
+    global mainch, Bg, boss,fireball_ch
     del(mainch)
     del(Bg)
     del(boss)
+    del(fireball_ch)
 
 def pause():
     pass
@@ -220,13 +233,35 @@ def handle_events():
             else:
                 mainch.handle_event(event)
                 pass
+
 def update():
+    global fireball
+    global fireball2
     mainch.update()
     boss.update()
+    # for문을 통해 리스트 전체를 업데이트
+    for i in Fireball:
+        if i.x < 1700:
+            i.update()
+        if i.x >1700:
+            Fireball.remove(i)
+
+    for j in Fireball2:
+        if j.x < 1700:
+            j.update()
+        if j.x <-100:
+            Fireball2.remove(j)
+
 
 def draw():
     clear_canvas()
     Bg.draw()
     mainch.draw()
     boss.draw()
+    for i in Fireball:
+        if -100<i.x < 1700:
+            i.draw()
+    for i in Fireball2:
+        if -100<i.x < 1700:
+            i.draw()
     update_canvas()
