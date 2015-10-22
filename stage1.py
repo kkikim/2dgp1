@@ -39,8 +39,8 @@ class bullet:
     def __init__(self) :
         self.x, self.y = 800, 450
         self.frame=0
-        if bullet.image==None:
-            bullet.image = load_image('2d image/2dsource/bullet.png')
+        if self.image==None:
+            self.image = load_image('2d image/2dsource/bullet.png')
     def update(self) :
         self.frame = (self.frame + 1 ) % 11
         self.x += 5
@@ -54,8 +54,8 @@ class boss1:
 
     def __init__(self) :
         self.x, self.y = 800, 450
-        if boss1.image ==None:
-            boss1.image = load_image('2d image/2dsource/boss1.png')
+        if self.image ==None:
+            self.image = load_image('2d image/2dsource/boss1.png')
         self.frame = 0
         self.time =0
     def update(self) :
@@ -256,13 +256,12 @@ def enter():
     bullet1 = bullet()
 
 def exit():
-    global mainch, Bg, boss,fireball_ch, fireball2_ch, bullet1
+    global mainch, Bg, boss,fireball_ch, fireball2_ch
     del(mainch)
     del(Bg)
     del(boss)
     del(fireball_ch)
     del(fireball2_ch)
-    del(bullet1)
 
 def pause():
     pass
@@ -282,6 +281,7 @@ def handle_events():
             pass
 
 def update():
+    delay(0.01)
     global fireball
     global fireball2
     global bullet1
@@ -310,8 +310,6 @@ def draw():
     Bg.draw()
     mainch.draw()
     boss.draw()
-    if int(time.clock()) >3:
-        bullet1.draw()
     for i in Fireball:
         if -100<i.x < 1700:
             i.draw()
