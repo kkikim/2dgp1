@@ -1,6 +1,7 @@
 import random
 import json
 import os
+import time
 
 from pico2d import *
 
@@ -14,8 +15,12 @@ Bg = None
 font = None
 Fireball = list()   #리스트
 Fireball2 = list()
+
 fireball_ch = None     #변수
 fireball2_ch = None
+
+bullet = None
+stage1_boss = None
 
 #global mainch
 
@@ -26,33 +31,44 @@ class background:
     def draw(self):
         self.image.draw(800, 450)
 
-class boss1:
-    def __init__(self):
-        self.x, self.y = 800, 450
-        self.frame = 0
-        self.image = load_image('2d image/2dsource/boss1.png')
-    def update(self):
-        delay(0.01)
-        self.frame = (self.frame +1)%3
-    def draw(self):
-        self.image.clip_draw(self.frame*200,0,200,200,self.x,self.y)
-
 class bullet:
-    def __init__(self):
-        self.x, self.y = 800,560
+
+    global stage1_boss
+
+    image=None
+    def __init__(self) :
+        self.x, self.y = 800, 450
         self.frame=0
-        self.bulletimage = load_image('2d image/2dsource/bullet.png')
-    def update(self):
-        pass
-    def draw(self):
-        self.bulletimage.draw(self.x,self.y)
+        if bullet.image==None:
+            bullet.image = load_image('2d image/2dsource/bullet.png')
+    def update(self) :
+        self.frame = (self.frame + 1 ) % 11
+        self.x += 5
+    def draw(self) :
+        self.image.draw(self.x,self.y)
+
+
+class boss1:
+    global bullet
+    image=None
+
+    def __init__(self) :
+        self.x, self.y = 800, 450
+        if boss1.image ==None:
+            boss1.image = load_image('2d image/2dsource/boss1.png')
+        self.frame = 0
+        self.time =0
+    def update(self) :
+        self.frame = (self.frame + 1 ) % 3
+    def draw(self) :
+        self.image.clip_draw(self.frame*200,0,200,200,self.x,self.y)
 
 class Mainch:
     LEFT_RUN, RIGHT_RUN, LEFT_STAND,RIGHT_STAND, UP_RUN, DOWN_RUN, UP_RUN2, DOWN_RUN2 = 0, 1, 2, 3, 4, 5,6,7
     KEY_DOWN_STATE, KEY_UP_STATE = 6,7
 
     global fireball_ch
-
+    global fireball2_ch
 
     def __init__(self):
 
@@ -117,6 +133,15 @@ class Mainch:
             if (event.type, event.key) == (SDL_KEYDOWN, SDLK_x):
                 fireball_ch.direction =0
                 Fireball.append(fireball(fireball_ch.direction))
+        # 파이어볼2
+        if self.state in (self.RIGHT_RUN, self.RIGHT_STAND ):
+            if (event.type, event.key) == (SDL_KEYDOWN, SDLK_z):
+                fireball2_ch.direction =1
+                Fireball2.append(fireball2(fireball2_ch.direction))
+        if self.state in (self.LEFT_RUN, self.LEFT_STAND ):
+            if (event.type, event.key) == (SDL_KEYDOWN, SDLK_z):
+                fireball2_ch.direction =0
+                Fireball2.append(fireball2(fireball2_ch.direction))
 
         #     방향키
         if (event.type, event.key) == (SDL_KEYDOWN, SDLK_LEFT):
@@ -186,7 +211,6 @@ class fireball:
         self.x2, self.y2 = self.x,self.y = mainch.x, mainch.y
         self.fireballframe = 0
         self.image = load_image('2d image/2dsource/fire_ball.png')
-#rotate_draw
         self.direction = dir
         if dir == 1 :
             self.image = load_image('2d image/2dsource/fire_ball2.png')      #오른쪽에서 왼쪽으로 갈때
@@ -201,20 +225,44 @@ class fireball:
         if mainch.state in (mainch.RIGHT_STAND, mainch.RIGHT_RUN, mainch.UP_RUN,mainch.DOWN_RUN, mainch.LEFT_STAND, mainch.LEFT_RUN):
             self.image.clip_draw(self.fireballframe*96,0,96,96,self.x,self.y)
 
+class fireball2:
+    global mainch
+    def __init__(self, dir):
+        self.x,self.y = mainch.x, mainch.y
+        self.fireballframe = 0
+        self.image = load_image('2d image/2dsource/mini_fire_ball2.png')
+        self.direction = dir
+        if dir == 1 :
+            self.image = load_image('2d image/2dsource/mini_fire_ball.png')      #오른쪽에서 왼쪽으로 갈때
+        elif dir == 0 :
+            self.direction = -1
+
+    def update(self):
+        self.fireballframe = (self.fireballframe +1)%6
+        self.x += (3 * self.direction)
+
+    def draw(self):
+        if mainch.state in (mainch.RIGHT_STAND, mainch.RIGHT_RUN, mainch.UP_RUN,mainch.DOWN_RUN, mainch.LEFT_STAND, mainch.LEFT_RUN):
+            self.image.clip_draw(self.fireballframe*100,0,100,50,self.x,self.y)
+
 def enter():
     open_canvas(1600,900)
-    global mainch, Bg, boss,fireball_ch
+    global mainch, Bg, boss, fireball_ch , fireball2_ch, bullet1
     mainch = Mainch()
     Bg = background()
     boss = boss1()
     fireball_ch = fireball(1)
+    fireball2_ch = fireball2(1)
+    bullet1 = bullet()
 
 def exit():
-    global mainch, Bg, boss,fireball_ch
+    global mainch, Bg, boss,fireball_ch, fireball2_ch, bullet1
     del(mainch)
     del(Bg)
     del(boss)
     del(fireball_ch)
+    del(fireball2_ch)
+    del(bullet1)
 
 def pause():
     pass
@@ -225,18 +273,18 @@ def resume():
 def handle_events():
     events = get_events()
     for event in events:
-        for event in events:
-            if event.type == SDL_QUIT:
-                game_framework.quit()
-            elif event.type == SDL_KEYDOWN and event.key == SDLK_ESCAPE:
-                game_framework.change_state(title_state)
-            else:
-                mainch.handle_event(event)
-                pass
+        if event.type == SDL_QUIT:
+            game_framework.quit()
+        elif event.type == SDL_KEYDOWN and event.key == SDLK_ESCAPE:
+            game_framework.change_state(title_state)
+        else:
+            mainch.handle_event(event)
+            pass
 
 def update():
     global fireball
     global fireball2
+    global bullet1
     mainch.update()
     boss.update()
     # for문을 통해 리스트 전체를 업데이트
@@ -245,12 +293,16 @@ def update():
             i.update()
         if i.x >1700:
             Fireball.remove(i)
+        if i.x<-100:
+            Fireball.remove(i)
 
-    for j in Fireball2:
-        if j.x < 1700:
-            j.update()
-        if j.x <-100:
-            Fireball2.remove(j)
+    for i in Fireball2:
+        if i.x < 1700:
+            i.update()
+        if i.x >1700:
+            Fireball2.remove(i)
+        if i.x<-100:
+            Fireball2.remove(i)
 
 
 def draw():
@@ -258,10 +310,13 @@ def draw():
     Bg.draw()
     mainch.draw()
     boss.draw()
+    if int(time.clock()) >3:
+        bullet1.draw()
     for i in Fireball:
         if -100<i.x < 1700:
             i.draw()
     for i in Fireball2:
         if -100<i.x < 1700:
             i.draw()
+
     update_canvas()
