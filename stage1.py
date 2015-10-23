@@ -2,6 +2,8 @@ import random
 import json
 import os
 import time
+import math
+import datetime
 
 from pico2d import *
 
@@ -10,17 +12,21 @@ import title_state
 
 name = "stage1"
 
+time = 0
+
 mainch = None
 Bg = None
 font = None
 Fireball = list()   #리스트
 Fireball2 = list()
+Bullet = list()
 
 fireball_ch = None     #변수
 fireball2_ch = None
-
 bullet = None
-stage1_boss = None
+
+# stage1_boss = None
+boss = None
 
 #global mainch
 
@@ -30,23 +36,6 @@ class background:
 
     def draw(self):
         self.image.draw(800, 450)
-
-class bullet:
-
-    global stage1_boss
-
-    image=None
-    def __init__(self) :
-        self.x, self.y = 800, 450
-        self.frame=0
-        if self.image==None:
-            self.image = load_image('2d image/2dsource/bullet.png')
-    def update(self) :
-        self.frame = (self.frame + 1 ) % 11
-        self.x += 5
-    def draw(self) :
-        self.image.draw(self.x,self.y)
-
 
 class boss1:
     global bullet
@@ -62,6 +51,31 @@ class boss1:
         self.frame = (self.frame + 1 ) % 3
     def draw(self) :
         self.image.clip_draw(self.frame*200,0,200,200,self.x,self.y)
+    def getposx(self):
+            return self.x
+    def getposy(self):
+            return self.y
+
+class bullet:
+    global boss
+    image=None
+    def __init__(self,angle) :
+        self.x, self.y = boss.getposx(), boss.getposy()
+        self.rad = 1
+        self.frame=0
+        self.angle = angle
+        if self.image==None:
+            self.image = load_image('2d image/2dsource/bullet.png')
+    def update(self) :
+        # if int(time.clock()) >3:
+        self.frame = (self.frame + 1 ) % 15
+        self.x += (self.rad*math.cos(self.angle))
+        self.y += (self.rad*math.sin(self.angle))
+        self.rad +=0.3
+
+    def draw(self) :
+        # if int(time.clock()) >bullet1time:
+        self.image.draw(self.x,self.y)
 
 class Mainch:
     LEFT_RUN, RIGHT_RUN, LEFT_STAND,RIGHT_STAND, UP_RUN, DOWN_RUN, UP_RUN2, DOWN_RUN2 = 0, 1, 2, 3, 4, 5,6,7
@@ -253,15 +267,16 @@ def enter():
     boss = boss1()
     fireball_ch = fireball(1)
     fireball2_ch = fireball2(1)
-    bullet1 = bullet()
+    bullet1 = bullet(1)
 
 def exit():
-    global mainch, Bg, boss,fireball_ch, fireball2_ch
+    global mainch, Bg, boss,fireball_ch, fireball2_ch, bullet1
     del(mainch)
     del(Bg)
     del(boss)
     del(fireball_ch)
     del(fireball2_ch)
+    del(bullet1)
 
 def pause():
     pass
@@ -287,6 +302,17 @@ def update():
     global bullet1
     mainch.update()
     boss.update()
+
+    if bullet1.frame%5==0:
+        i = 0
+        while i < 18:
+            i+=1
+            Bullet.append(bullet(i*15))
+
+    # for i in range(18) :
+    #     Bullet.append(bullet(i*20))
+    # Fireball.append(fireball(fireball_ch.direction))
+
     # for문을 통해 리스트 전체를 업데이트
     for i in Fireball:
         if i.x < 1700:
@@ -304,6 +330,14 @@ def update():
         if i.x<-100:
             Fireball2.remove(i)
 
+    for i in Bullet:
+        if i.x < 1700:
+            i.update()
+        if i.x >1700:
+            Bullet.remove(i)
+        if i.x<-100:
+            Bullet.remove(i)
+
 
 def draw():
     clear_canvas()
@@ -314,6 +348,9 @@ def draw():
         if -100<i.x < 1700:
             i.draw()
     for i in Fireball2:
+        if -100<i.x < 1700:
+            i.draw()
+    for i in Bullet:
         if -100<i.x < 1700:
             i.draw()
 
