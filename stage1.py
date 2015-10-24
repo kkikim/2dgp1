@@ -14,6 +14,8 @@ name = "stage1"
 
 time = 0
 
+
+
 mainch = None
 Bg = None
 font = None
@@ -25,6 +27,9 @@ fireball_ch = None     #변수
 fireball2_ch = None
 bullet = None
 
+current_time =None
+frame_time = None
+timecheck = None
 # stage1_boss = None
 boss = None
 
@@ -71,7 +76,7 @@ class bullet:
         self.frame = (self.frame + 1 ) % 15
         self.x += (self.rad*math.cos(self.angle))
         self.y += (self.rad*math.sin(self.angle))
-        self.rad +=0.3
+        self.rad +=0.1
 
     def draw(self) :
         # if int(time.clock()) >bullet1time:
@@ -261,13 +266,15 @@ class fireball2:
 
 def enter():
     open_canvas(1600,900)
-    global mainch, Bg, boss, fireball_ch , fireball2_ch, bullet1
+    global mainch, Bg, boss, fireball_ch , fireball2_ch, bullet1, current_time, timecheck
     mainch = Mainch()
     Bg = background()
     boss = boss1()
     fireball_ch = fireball(1)
     fireball2_ch = fireball2(1)
     bullet1 = bullet(1)
+    current_time = get_time()
+    timecheck = 0
 
 def exit():
     global mainch, Bg, boss,fireball_ch, fireball2_ch, bullet1
@@ -300,14 +307,22 @@ def update():
     global fireball
     global fireball2
     global bullet1
+    global frame_time, current_time, timecheck
     mainch.update()
     boss.update()
 
+    frame_time = get_time() - current_time
+    current_time = get_time()
+    timecheck += frame_time
     if bullet1.frame%5==0:
         i = 0
-        while i < 18:
-            i+=1
-            Bullet.append(bullet(i*15))
+        if timecheck >= 3:
+            timecheck = 0
+            while i < 18:
+                i+=1
+                Bullet.append(bullet(i*15))
+
+
 
     # for i in range(18) :
     #     Bullet.append(bullet(i*20))
