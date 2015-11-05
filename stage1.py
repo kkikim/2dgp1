@@ -4,9 +4,11 @@ import os
 import time
 import math
 import datetime
-
+import random
+# f2는 5 f1은 1
+# 보스에 모든 데미지는 1
+# 보스체력 500, 캐릭터 체력 100
 from pico2d import *
-
 import game_framework
 import title_state
 
@@ -20,6 +22,7 @@ font = None
 Fireball = list()   #리스트
 Fireball2 = list()
 Bullet = list()
+Summons = list()
 
 fireball_ch = None     #변수
 fireball2_ch = None
@@ -30,6 +33,7 @@ frame_time = None
 timecheck = None
 # stage1_boss = None
 boss = None
+summon1 = None
 
 #global mainch
 
@@ -45,6 +49,7 @@ class boss1:
     image=None
 
     def __init__(self) :
+        self.hp = 500
         self.x, self.y = 800, 450
         if self.image ==None:
             self.image = load_image('2d image/2dsource/boss1.png')
@@ -54,6 +59,28 @@ class boss1:
         self.frame = (self.frame + 1 ) % 3
     def draw(self) :
         self.image.clip_draw(self.frame*200,0,200,200,self.x,self.y)
+    def get_bb(self):
+        return self.x-100,self.y-50,self.x+ 100,self.y+ 50
+    def getposx(self):
+            return self.x
+    def getposy(self):
+            return self.y
+
+class summon:
+    global bullet
+    image=None
+
+    def __init__(self,initx,inity) :
+        self.hp = 10
+        self.x, self.y = initx, inity
+        if self.image ==None:
+            self.image = load_image('2d image/2dsource/summon1.png')
+        self.frame = 0
+        self.time =0
+    def update(self) :
+        self.frame = (self.frame + 1 ) % 4
+    def draw(self) :
+        self.image.clip_draw(self.frame*75,0,75,75,self.x,self.y)
     def get_bb(self):
         return self.x-100,self.y-50,self.x+ 100,self.y+ 50
     def getposx(self):
@@ -83,7 +110,6 @@ class bullet:
         self.image.draw(self.x,self.y)
     def get_bb(self):
         return self.x-12,self.y-12,self.x+ 12,self.y+ 12
-
 class Mainch:
     LEFT_RUN, RIGHT_RUN, LEFT_STAND,RIGHT_STAND, UP_RUN, DOWN_RUN, UP_RUN2, DOWN_RUN2 = 0, 1, 2, 3, 4, 5,6,7
     KEY_DOWN_STATE, KEY_UP_STATE = 6,7
@@ -92,7 +118,7 @@ class Mainch:
     global fireball2_ch
 
     def __init__(self):
-
+        self.hp = 100
         self.x, self.y = 450, 450
         self.keyState =self.KEY_UP_STATE
         self.standframe= 0
@@ -247,7 +273,6 @@ class fireball:
             self.image.clip_draw(self.fireballframe*96,0,96,96,self.x,self.y)
     def get_bb(self):
         return self.x-50,self.y-50,self.x+ 50,self.y+ 50
-
 class fireball2:
     global mainch
     def __init__(self, dir):
@@ -284,24 +309,28 @@ def collide(a, b):
 
 def enter():
     open_canvas(1600,900)
-    global mainch, Bg, boss, fireball_ch , fireball2_ch, bullet1, current_time, timecheck
+    global mainch, Bg, boss, fireball_ch , fireball2_ch, bullet1, current_time, timecheck, summon1,timecheck2
     mainch = Mainch()
     Bg = background()
     boss = boss1()
     fireball_ch = fireball(1)
     fireball2_ch = fireball2(1)
     bullet1 = bullet(1)
+    summon1 = summon(100,100)
     current_time = get_time()
     timecheck = 0
+    timecheck2 = 0
+    # summon1 = summon()
 
 def exit():
-    global mainch, Bg, boss,fireball_ch, fireball2_ch, bullet1
+    global mainch, Bg, boss,fireball_ch, fireball2_ch, bullet1, summon1
     del(mainch)
     del(Bg)
     del(boss)
     del(fireball_ch)
     del(fireball2_ch)
     del(bullet1)
+    del(summon1)
 
 def pause():
     pass
@@ -325,13 +354,17 @@ def update():
     global fireball
     global fireball2
     global bullet1
-    global frame_time, current_time, timecheck
+    global summon1
+    global frame_time, current_time, timecheck, timecheck2
     mainch.update()
     boss.update()
+    # summon1.update()
 
     frame_time = get_time() - current_time
     current_time = get_time()
     timecheck += frame_time
+    timecheck2 += frame_time
+    # 미사일패턴 1
     if bullet1.frame%3==0:
         i = 0
         if timecheck >= 3:
@@ -339,6 +372,12 @@ def update():
             while i < 18:
                 i+=1
                 Bullet.append(bullet(i*15))
+    if summon1.frame%4==0:
+        if timecheck2>=3:
+            timecheck2 = 0
+            Summons.append(summon(random.randint(100,1500),random.randint(100,700)))
+            # summon1 = summon(100,100)
+
     # for문을 통해 리스트 전체를 업데이트
     for i in Fireball:
         if i.x < 1700:
@@ -348,6 +387,7 @@ def update():
         if i.x<-100:
             Fireball.remove(i)
         if collide(i,boss):
+            boss.hp-=1
             Fireball.remove(i)
 
     for i in Fireball2:
@@ -358,8 +398,8 @@ def update():
         if i.x<-100:
             Fireball2.remove(i)
         if collide(i,boss):
+            boss.hp-=3
             Fireball2.remove(i)
-
 
     for i in Bullet:
         if i.x < 1700:
@@ -369,13 +409,21 @@ def update():
         if i.x<-100:
             Bullet.remove(i)
         if collide(i,mainch):
+            mainch.hp-=1
             Bullet.remove(i)
+
+    for i in Summons:
+        if i.x < 1700:
+            i.update()
 
 def draw():
     clear_canvas()
     Bg.draw()
     mainch.draw()
     boss.draw()
+    for i in Summons:
+        if -100<i.x < 1700:
+            i.draw()
     for i in Fireball:
         if -100<i.x < 1700:
             i.draw()
