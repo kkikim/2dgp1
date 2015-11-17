@@ -18,16 +18,21 @@ time = 0
 
 mainch = None
 Bg = None
+Hp = None
+Hp2 = None
 font = None
 
 Fireball = list()   #리스트
 Fireball2 = list()
 Bullet = list()
+Bullet2 = list()
 Summons = list()
 
 fireball_ch = None     #변수
 fireball2_ch = None
+shield_ch = None
 bullet = None
+bullet2 = None
 sbullet = None
 
 current_time =None
@@ -38,6 +43,22 @@ boss = None
 summon1 = None
 
 #global mainch
+class hpbar:
+    global mainch
+    def __init__(self):
+        self.hp = mainch.hp*2.3
+        self.image = load_image('2d image/2dsource/HP.png')
+        self.image2 = load_image('2d image/2dsource/HPtool.png')
+        self.image3 = load_image('2d image/2dsource/mainui.png')
+        self.image4 = load_image('2d image/2dsource/skillbar.png')
+    def update(self,mainch):
+        self.hp = mainch.hp*2.3
+    def draw(self):
+        self.image2.draw(230,820)
+        # self.image.draw(230, 820)
+        self.image3.draw(50,820)
+        self.image.clip_draw(1*75,0,int(self.hp),15,230,820)
+        self.image4.draw(120,50)
 
 class background:
     def __init__(self):
@@ -149,6 +170,7 @@ class summon:
             i.update(frame_time)
             if collide(self.target, i):
                 self.SBullet.remove(i)
+                self.target.hp-=1
 
         if self.delayTime > 3:
             for i in self.SBullet:
@@ -203,10 +225,10 @@ class bullet:
         self.total_frames = 0.0
         self.frame=0
         self.angle = angle* (3.141592 / 180.0)
+        self.anglerate = 0.025
         if self.image==None:
             self.image = load_image('2d image/2dsource/bullet.png')
     def update(self,frame_time) :
-
         distance = self.RUN_SPEED_PPS * frame_time
         self.total_frames += \
             self.FRAMES_PER_ACTION * self.ACTION_PER_TIME * frame_time
@@ -216,18 +238,61 @@ class bullet:
         self.x += (self.rad*math.cos(self.angle ))
         self.y += (self.rad*math.sin(self.angle ))
         self.rad +=0.1
+        self.angle+=self.anglerate
 
     def draw(self) :
         # if int(time.clock()) >bullet1time:
         self.image.draw(self.x,self.y)
     def get_bb(self):
-        return self.x-12,self.y-12,self.x+ 12,self.y+ 12
+        return self.x-10,self.y-10,self.x+ 10,self.y+ 10
+
+class bullet2:
+    global boss
+    image=None
+
+    PIXEL_PER_METER = (10.0/0.3)                    #10 pixel 3ocm
+    RUN_SPEED_KMPH = 40.0                           #KM/HOUR
+    RUN_SPEED_MPM = (RUN_SPEED_KMPH * 1000.0/60.0)
+    RUN_SPEED_MPS = (RUN_SPEED_MPM/60.0)
+    RUN_SPEED_PPS = (RUN_SPEED_MPS * PIXEL_PER_METER)
+
+    TIME_PER_ACTION = 0.5
+    ACTION_PER_TIME = 1.0 / TIME_PER_ACTION
+    FRAMES_PER_ACTION = 8
+
+    def __init__(self,angle) :
+        self.x, self.y = boss.getposx(), boss.getposy()
+        self.rad = 1
+        self.total_frames = 0.0
+        self.frame=0
+        self.angle = angle* (3.141592 / 180.0)
+        self.anglerate = 0.5
+        if self.image==None:
+            self.image = load_image('2d image/2dsource/bullet.png')
+    def update(self,frame_time) :
+        distance = self.RUN_SPEED_PPS * frame_time
+        self.total_frames += \
+            self.FRAMES_PER_ACTION * self.ACTION_PER_TIME * frame_time
+        self.frame = int(self.total_frames)%15
+        # if int(time.clock()) >3:z
+        # self.frame = (self.frame + 1 ) % 15
+        self.x += (self.rad*math.cos(self.angle ))
+        self.y += (self.rad*math.sin(self.angle ))
+        self.rad +=50
+        self.angle+=self.anglerate
+
+    def draw(self) :
+        self.image.draw(self.x,self.y)
+    def get_bb(self):
+        return self.x-10,self.y-10,self.x+ 10,self.y+ 10
+
 class Mainch:
     LEFT_RUN, RIGHT_RUN, LEFT_STAND,RIGHT_STAND, UP_RUN, DOWN_RUN, UP_RUN2, DOWN_RUN2 = 0, 1, 2, 3, 4, 5,6,7
     KEY_DOWN_STATE, KEY_UP_STATE = 6,7
 
     global fireball_ch
     global fireball2_ch
+    global shield_ch
 
     PIXEL_PER_METER = (10.0/0.3)                    #10 pixel 3ocm
     RUN_SPEED_KMPH = 40.0                           #KM/HOUR
@@ -267,32 +332,19 @@ class Mainch:
         self.dir = 1    #방향4
         self.boost = False
 
+        self.shield = False
+
     def update(self,frame_time):
         distance = self.RUN_SPEED_PPS * frame_time
         self.total_frames += \
             self.FRAMES_PER_ACTION * self.ACTION_PER_TIME * frame_time
         self.frame = int(self.total_frames)%6
-        # self.total_frames +=1.0
-        # self.frame = (self.frame + 1) % 6
         self.dashframe = int(self.total_frames)%3
         self.standframe = int(self.total_frames)%10
-        # self.FRAMES_PER_ACTION * self.ACTION_PER_TIME * frame_time
-        # self.frame = int(self.total_frames)%8
-        # self.total_frames += 1.0
-        # self.frame = (self.frame +1)%6
-
-        # self.x += (self.dir * distance)
-    # ------------------------------------------------------------------------
-    #     self.frame = (self.frame + 1) % 6
-    #     self.dashframe = (self.dashframe+1)%3
-    #     self.standframe = (self.standframe+1)%10
-    # ------------------------------------------------------------------
         if self.boost==True:
             boostspeed = 5
         elif self.boost == False:
             boostspeed=0
-        #if self.keyState == self.KEY_DOWN_STATE:
-                #Fireball.append(fireball())
         if self.state == self.RIGHT_RUN:
             self.x = min(1580, self.x + distance+boostspeed)
         elif self.state == self.LEFT_RUN:
@@ -328,7 +380,6 @@ class Mainch:
             if (event.type, event.key) == (SDL_KEYDOWN, SDLK_z):
                 fireball2_ch.direction =0
                 Fireball2.append(fireball2(fireball2_ch.direction))
-
         #     방향키
         if (event.type, event.key) == (SDL_KEYDOWN, SDLK_LEFT):
             if self.state in (self.RIGHT_STAND,self.LEFT_STAND ,self.RIGHT_RUN, self.UP_RUN, self.DOWN_RUN):
@@ -391,7 +442,7 @@ class Mainch:
                 elif self.x>800 :
                    self.image2.clip_draw(self.frame * 100, 0, 100, 100, self.x, self.y)
     def get_bb(self):
-        return self.x-50,self.y-50,self.x+ 50,self.y+ 50
+        return self.x-25,self.y-50,self.x+ 25,self.y+ 50
 class fireball:
     global mainch
 
@@ -478,22 +529,28 @@ def collide(a, b):
 
 def enter():
     # open_canvas(1600,900)
-    global mainch, Bg, boss, fireball_ch , fireball2_ch, bullet1, current_time, timecheck,timecheck2, timecheck3
+    global mainch, Bg, boss, fireball_ch , fireball2_ch,shield_ch, bullet1,bullet2 ,current_time, timecheck,timecheck2, timecheck3,timecheck4,k,\
+    Hp
     mainch = Mainch()
     Bg = background()
+    Hp = hpbar()
+    # Hp2 = hpbar2()
     boss = boss1()
     fireball_ch = fireball(1)
     fireball2_ch = fireball2(1)
     bullet1 = bullet(1)
+    bullet2 = bullet2(1)
     # summon1 = summon(100,100)
     current_time = get_time()
     timecheck = 0
     timecheck2 = 0
     timecheck3 = 0
+    timecheck4 = 0
+    k=0
     # summon1 = summon()
 
 def exit():
-    global mainch, Bg, boss,fireball_ch, fireball2_ch, bullet1, summon1
+    global mainch, Bg, boss,fireball_ch, fireball2_ch, bullet1,bullet2, summon1,Hp
     del(mainch)
     del(Bg)
     del(boss)
@@ -501,6 +558,8 @@ def exit():
     del(fireball2_ch)
     del(bullet1)
     del(summon1)
+    del(bullet2)
+    del(Hp)
 
 def pause():
     pass
@@ -521,7 +580,8 @@ def handle_events():
 
 def update():
     delay(0.01)
-    global fireball, fireball2, bullet1, summon1,frame_time, current_time, timecheck, timecheck2, timecheck3
+    global fireball, fireball2, bullet1,bullet2, summon1,frame_time, current_time, timecheck, timecheck2, timecheck3, timecheck4\
+        ,k
 
     frame_time = get_time() - current_time
     # frame_time = get_frame_time()
@@ -529,8 +589,10 @@ def update():
     timecheck += frame_time       #미사일패턴 1
     timecheck2 += frame_time      #쫄따구
     timecheck3 += frame_time        #쫄따구 미사일
+    timecheck4 += frame_time
     mainch.update(frame_time)
     boss.update(frame_time)
+    Hp.update(mainch)
     # summon1.update()
 
     # 미사일패턴 1
@@ -541,11 +603,18 @@ def update():
         while i < 18:
             i+=1
             Bullet.append(bullet(i*20))
-
+    #
     if timecheck2>=5:
         timecheck2 = 0
         Summons.append(summon(mainch, random.randint(100,1500),random.randint(100,700)))
             # summon1 = summon(100,100)
+    if 0<timecheck4<5:
+        if timecheck3 >= 0.05:
+            timecheck3 = 0
+            Bullet2.append(bullet(k*45))
+            k+=1
+    if timecheck4>20:
+        timecheck4=0
 
     # for문을 통해 리스트 전체를 업데이트
     for i in Fireball:
@@ -586,8 +655,20 @@ def update():
         if i.x<-100:
             Bullet.remove(i)
         if collide(i,mainch):
-            mainch.hp-=1
             Bullet.remove(i)
+            mainch.hp-=1
+
+    for i in Bullet2:
+        if i.x < 1700:
+            i.update(frame_time)
+        if i.x >1700:
+            Bullet2.remove(i)
+        if i.x<-100:
+            Bullet2.remove(i)
+        if collide(i,mainch):
+            Bullet2.remove(i)
+            mainch.hp-=1
+
     for i in Summons:
         if i.x < 1700:
             i.update(frame_time)
@@ -597,6 +678,7 @@ def draw():
     Bg.draw()
     mainch.draw()
     boss.draw()
+    Hp.draw()
     for i in Summons:
         if -100<i.x < 1700:
             i.draw()
@@ -609,6 +691,8 @@ def draw():
     for i in Bullet:
         if -100<i.x < 1700:
             i.draw()
-
+    for i in Bullet2:
+        if -100<i.x < 1700:
+            i.draw()
     update_canvas()
 
