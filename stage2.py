@@ -282,6 +282,7 @@ def collide(a, b):
 
     return True
 
+
 def enter():
     open_canvas(1600,900)
     global mainch, Bg, boss, fireball_ch , fireball2_ch, bullet1, current_time, timecheck

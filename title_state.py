@@ -6,10 +6,9 @@ from pico2d import *
 name = "TitleState"
 image = None
 
-
 def enter():
     global image
-    image = load_image('title.png')
+    image = load_image('title2.png')
 
 def exit():
     global image
@@ -34,20 +33,11 @@ def draw():
     image.draw(800, 450)
     update_canvas()
 
-
 def update():
     pass
-
 
 def pause():
     pass
 
-
 def resume():
     pass
-
-
-
-
-
-

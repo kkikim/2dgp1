@@ -612,6 +612,12 @@ def collide(a, b):
 
     return True
 
+
+def sprite(frame_time):
+    image = load_image('2d image/2dsource/HP.png')
+    image.clip_draw(1*75,0,int(self.hp),15,230,820)
+
+
 def enter():
     # open_canvas(1600,900)
     global mainch, Bg, boss, fireball_ch , fireball2_ch,shield_ch, bullet1,bullet2,bullet3,bullet4 ,current_time, timecheck,timecheck2, timecheck3,timecheck4,k,\
