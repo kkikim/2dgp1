@@ -76,13 +76,14 @@ class hpbar:
         self.image.clip_draw(1*75,0,int(self.hp),15,230,50)
         self.image3.draw(800,50)
 class background:
+    bgm = None
     def __init__(self):
         self.image = load_image('2d image/2dsource/stage2.png')
         self.image2 = load_image('2d image/2dsource/background.png')
-        self.canvas_width = get_canvas_width()
-        self.canvas_height = get_canvas_height()
-        self.w = self.image.w
-        self.h = self.image.h
+        if background.bgm ==  None :
+            background.bgm = load_music('2d image/2dsource/background.mp3')
+            background.bgm.set_volume(60)
+            background.bgm.repeat_play()
     def draw(self):
         self.image2.draw(800,450)
         self.image.draw(800, 500)
@@ -634,14 +635,13 @@ def collide(a, b):
 #create world
 def enter():
     # open_canvas(1600,900)
-    global mainch, Bg, boss, fireball_ch , fireball2_ch,shield_ch, bullet1,bullet2,bullet3,bullet4 ,current_time, timecheck,timecheck2, timecheck3,timecheck4,k,\
-    Hp,endtime,boss_state,ch_state,timecheck5,kk,ui
+    global mainch , boss, fireball_ch , fireball2_ch,shield_ch, bullet1,bullet2,bullet3,bullet4 ,current_time, timecheck,timecheck2, timecheck3,timecheck4,k,\
+    Hp,endtime,boss_state,ch_state,timecheck5,kk,ui,Bg
 
     mainch = Mainch()
     Bg = background()
     Hp = hpbar()
     ui = UI()
-    # Hp2 = hpbar2()
     boss = boss1()
     fireball_ch = fireball(1)
     fireball2_ch = fireball2(1)
@@ -664,7 +664,6 @@ def exit():
     global mainch, Bg, boss,fireball_ch, fireball2_ch,Bullet,Bullet2, Bullet3, Bullet4, summon1,Hp,Summons,ui
     del(mainch)
     del(Bg)
-    #del(boss)
     del(fireball_ch)
     del(fireball2_ch)
     del(Bullet)
@@ -672,8 +671,6 @@ def exit():
     del(Bullet3)
     del(Bullet4)
     del(summon1)
-    # del(bullet2)
-    # del(bullet3)
     del(Hp)
     del(Summons)
     del(ui)
