@@ -3,12 +3,13 @@ import json
 import os
 import time
 import math
-import datetime
 import random
 # f2는 5 f1은 1
 # 보스에 모든 데미지는 1
 # 보스체력 500, 캐릭터 체력 100
+
 from pico2d import *
+
 import game_framework
 import title_state
 import gameover_state
@@ -48,6 +49,19 @@ boss = None
 summon1 = None
 
 #global mainch
+class UI:
+    def __init__(self):
+        self.score = 0
+        self.font = load_font('ConsolaMalgun.ttf', 40)
+        self.time = 0.0
+
+    def update(self, frame_time):
+        self.time = get_time()
+
+    def draw(self):
+        # print('score %d time %f' % (self.score, self.time))
+        self.font.draw(1100, 50, 'SCORE %d TIME %f' % (self.score, self.time))
+
 class hpbar:
     global mainch, boss
     def __init__(self):
@@ -65,38 +79,13 @@ class background:
     def __init__(self):
         self.image = load_image('2d image/2dsource/stage2.png')
         self.image2 = load_image('2d image/2dsource/background.png')
+        self.canvas_width = get_canvas_width()
+        self.canvas_height = get_canvas_height()
+        self.w = self.image.w
+        self.h = self.image.h
     def draw(self):
         self.image2.draw(800,450)
         self.image.draw(800, 500)
-
-class boss1:
-    global bullet
-    image=None
-
-    TIME_PER_ACTION = 0.5
-    ACTION_PER_TIME = 1.0 / TIME_PER_ACTION
-    FRAMES_PER_ACTION = 8
-
-    def __init__(self) :
-        self.hp = 10
-        self.x, self.y = 800, 450
-        if self.image ==None:
-            self.image = load_image('2d image/2dsource/boss1.png')
-        self.frame = 0
-        self.time =0
-        self.total_frames = 0.0
-    def update(self,frame_time) :
-        self.total_frames += \
-            self.FRAMES_PER_ACTION * self.ACTION_PER_TIME * frame_time
-        self.frame = int(self.total_frames)%3
-    def draw(self) :
-        self.image.clip_draw(self.frame*200,0,200,200,self.x,self.y)
-    def get_bb(self):
-        return self.x-100,self.y-50,self.x+ 100,self.y+ 50
-    def getposx(self):
-            return self.x
-    def getposy(self):
-            return self.y
 
 class summonbullet:
     global summon1
@@ -207,7 +196,6 @@ class summon:
     def getposy(self):
             return self.y
 
-#휘는총알
 class bullet:
     global boss
     image=None
@@ -248,6 +236,36 @@ class bullet:
         self.image.draw(self.x,self.y)
     def get_bb(self):
         return self.x-10,self.y-10,self.x+ 10,self.y+ 10
+
+class boss1:
+    global bullet
+    image=None
+
+    TIME_PER_ACTION = 0.5
+    ACTION_PER_TIME = 1.0 / TIME_PER_ACTION
+    FRAMES_PER_ACTION = 8
+
+    def __init__(self) :
+        self.hp = 10
+        self.x, self.y = 800, 450
+        if self.image ==None:
+            self.image = load_image('2d image/2dsource/boss1.png')
+        self.frame = 0
+        self.time =0
+        self.total_frames = 0.0
+    def update(self,frame_time) :
+        self.total_frames += \
+            self.FRAMES_PER_ACTION * self.ACTION_PER_TIME * frame_time
+        self.frame = int(self.total_frames)%3
+    def draw(self) :
+        self.image.clip_draw(self.frame*200,0,200,200,self.x,self.y)
+    def get_bb(self):
+        return self.x-100,self.y-50,self.x+ 100,self.y+ 50
+    def getposx(self):
+            return self.x
+    def getposy(self):
+            return self.y
+
 #휘는총알
 class bullet2:
     global boss
@@ -369,6 +387,77 @@ class bullet4:
     def get_bb(self):
         return self.x-10,self.y-10,self.x+ 10,self.y+ 10
 
+class fireball:
+    global mainch
+
+    PIXEL_PER_METER = (10.0/0.3)                    #10 pixel 3ocm
+    RUN_SPEED_KMPH = 60.0                           #KM/HOUR
+    RUN_SPEED_MPM = (RUN_SPEED_KMPH * 1000.0/60.0)
+    RUN_SPEED_MPS = (RUN_SPEED_MPM/60.0)
+    RUN_SPEED_PPS = (RUN_SPEED_MPS * PIXEL_PER_METER)
+
+    TIME_PER_ACTION = 0.5
+    ACTION_PER_TIME = 1.0 / TIME_PER_ACTION
+    FRAMES_PER_ACTION = 8
+
+    def __init__(self, dir):
+        self.x2, self.y2 = self.x,self.y = mainch.x, mainch.y
+        self.fireballframe = 0
+        self.image = load_image('2d image/2dsource/fire_ball.png')
+        self.direction = dir
+        self.total_frames = 0.0
+        if dir == 1 :
+            self.image = load_image('2d image/2dsource/fire_ball2.png')      #오른쪽에서 왼쪽으로 갈때
+        elif dir == 0 :
+            self.direction = -1
+    def update(self,frame_time):
+        distance = self.RUN_SPEED_PPS * frame_time
+        self.total_frames += \
+            self.FRAMES_PER_ACTION * self.ACTION_PER_TIME * frame_time
+        self.fireballframe = int(self.total_frames)%8
+        self.x += (distance * self.direction)
+    def draw(self):
+        if mainch.state in (mainch.RIGHT_STAND, mainch.RIGHT_RUN, mainch.UP_RUN,mainch.DOWN_RUN, mainch.LEFT_STAND, mainch.LEFT_RUN):
+            self.image.clip_draw(self.fireballframe*96,0,96,96,self.x,self.y)
+    def get_bb(self):
+        return self.x-50,self.y-50,self.x+ 50,self.y+ 50
+class fireball2:
+    global mainch
+
+    PIXEL_PER_METER = (10.0/0.3)                    #10 pixel 3ocm
+    RUN_SPEED_KMPH = 40.0                           #KM/HOUR
+    RUN_SPEED_MPM = (RUN_SPEED_KMPH * 1000.0/60.0)
+    RUN_SPEED_MPS = (RUN_SPEED_MPM/60.0)
+    RUN_SPEED_PPS = (RUN_SPEED_MPS * PIXEL_PER_METER)
+
+    TIME_PER_ACTION = 0.5
+    ACTION_PER_TIME = 1.0 / TIME_PER_ACTION
+    FRAMES_PER_ACTION = 8
+
+    def __init__(self, dir):
+        self.x,self.y = mainch.x, mainch.y
+        self.fireballframe = 0
+        self.total_frames = 0.0
+        self.image = load_image('2d image/2dsource/mini_fire_ball2.png')
+        self.direction = dir
+        if dir == 1 :
+            self.image = load_image('2d image/2dsource/mini_fire_ball.png')      #오른쪽에서 왼쪽으로 갈때
+        elif dir == 0 :
+            self.direction = -1
+
+    def update(self,frame_time):
+        distance = self.RUN_SPEED_PPS * frame_time
+        self.total_frames += \
+            self.FRAMES_PER_ACTION * self.ACTION_PER_TIME * frame_time
+        self.fireballframe = int(self.total_frames)%6
+        self.x += (distance * self.direction)
+
+
+    def draw(self):
+        if mainch.state in (mainch.RIGHT_STAND, mainch.RIGHT_RUN, mainch.UP_RUN,mainch.DOWN_RUN, mainch.LEFT_STAND, mainch.LEFT_RUN):
+            self.image.clip_draw(self.fireballframe*100,0,100,50,self.x,self.y)
+    def get_bb(self):
+        return self.x-50,self.y-50,self.x+ 50,self.y+ 50
 class Mainch:
     LEFT_RUN, RIGHT_RUN, LEFT_STAND,RIGHT_STAND, UP_RUN, DOWN_RUN, UP_RUN2, DOWN_RUN2 = 0, 1, 2, 3, 4, 5,6,7
     KEY_DOWN_STATE, KEY_UP_STATE = 6,7
@@ -526,78 +615,11 @@ class Mainch:
                    self.image2.clip_draw(self.frame * 100, 0, 100, 100, self.x, self.y)
     def get_bb(self):
         return self.x-25,self.y-50,self.x+ 25,self.y+ 50
-class fireball:
-    global mainch
 
-    PIXEL_PER_METER = (10.0/0.3)                    #10 pixel 3ocm
-    RUN_SPEED_KMPH = 60.0                           #KM/HOUR
-    RUN_SPEED_MPM = (RUN_SPEED_KMPH * 1000.0/60.0)
-    RUN_SPEED_MPS = (RUN_SPEED_MPM/60.0)
-    RUN_SPEED_PPS = (RUN_SPEED_MPS * PIXEL_PER_METER)
+def animation():
+    pass
 
-    TIME_PER_ACTION = 0.5
-    ACTION_PER_TIME = 1.0 / TIME_PER_ACTION
-    FRAMES_PER_ACTION = 8
-
-    def __init__(self, dir):
-        self.x2, self.y2 = self.x,self.y = mainch.x, mainch.y
-        self.fireballframe = 0
-        self.image = load_image('2d image/2dsource/fire_ball.png')
-        self.direction = dir
-        self.total_frames = 0.0
-        if dir == 1 :
-            self.image = load_image('2d image/2dsource/fire_ball2.png')      #오른쪽에서 왼쪽으로 갈때
-        elif dir == 0 :
-            self.direction = -1
-    def update(self,frame_time):
-        distance = self.RUN_SPEED_PPS * frame_time
-        self.total_frames += \
-            self.FRAMES_PER_ACTION * self.ACTION_PER_TIME * frame_time
-        self.fireballframe = int(self.total_frames)%8
-        self.x += (distance * self.direction)
-    def draw(self):
-        if mainch.state in (mainch.RIGHT_STAND, mainch.RIGHT_RUN, mainch.UP_RUN,mainch.DOWN_RUN, mainch.LEFT_STAND, mainch.LEFT_RUN):
-            self.image.clip_draw(self.fireballframe*96,0,96,96,self.x,self.y)
-    def get_bb(self):
-        return self.x-50,self.y-50,self.x+ 50,self.y+ 50
-class fireball2:
-    global mainch
-
-    PIXEL_PER_METER = (10.0/0.3)                    #10 pixel 3ocm
-    RUN_SPEED_KMPH = 40.0                           #KM/HOUR
-    RUN_SPEED_MPM = (RUN_SPEED_KMPH * 1000.0/60.0)
-    RUN_SPEED_MPS = (RUN_SPEED_MPM/60.0)
-    RUN_SPEED_PPS = (RUN_SPEED_MPS * PIXEL_PER_METER)
-
-    TIME_PER_ACTION = 0.5
-    ACTION_PER_TIME = 1.0 / TIME_PER_ACTION
-    FRAMES_PER_ACTION = 8
-
-    def __init__(self, dir):
-        self.x,self.y = mainch.x, mainch.y
-        self.fireballframe = 0
-        self.total_frames = 0.0
-        self.image = load_image('2d image/2dsource/mini_fire_ball2.png')
-        self.direction = dir
-        if dir == 1 :
-            self.image = load_image('2d image/2dsource/mini_fire_ball.png')      #오른쪽에서 왼쪽으로 갈때
-        elif dir == 0 :
-            self.direction = -1
-
-    def update(self,frame_time):
-        distance = self.RUN_SPEED_PPS * frame_time
-        self.total_frames += \
-            self.FRAMES_PER_ACTION * self.ACTION_PER_TIME * frame_time
-        self.fireballframe = int(self.total_frames)%6
-        self.x += (distance * self.direction)
-
-
-    def draw(self):
-        if mainch.state in (mainch.RIGHT_STAND, mainch.RIGHT_RUN, mainch.UP_RUN,mainch.DOWN_RUN, mainch.LEFT_STAND, mainch.LEFT_RUN):
-            self.image.clip_draw(self.fireballframe*100,0,100,50,self.x,self.y)
-    def get_bb(self):
-        return self.x-50,self.y-50,self.x+ 50,self.y+ 50
-
+#충돌체크.
 def collide(a, b):
 
     left_a, bottom_a, right_a, top_a = a.get_bb()
@@ -609,14 +631,16 @@ def collide(a, b):
     if bottom_a > top_b: return False
 
     return True
-
+#create world
 def enter():
     # open_canvas(1600,900)
     global mainch, Bg, boss, fireball_ch , fireball2_ch,shield_ch, bullet1,bullet2,bullet3,bullet4 ,current_time, timecheck,timecheck2, timecheck3,timecheck4,k,\
-    Hp,endtime,boss_state,ch_state,timecheck5,kk
+    Hp,endtime,boss_state,ch_state,timecheck5,kk,ui
+
     mainch = Mainch()
     Bg = background()
     Hp = hpbar()
+    ui = UI()
     # Hp2 = hpbar2()
     boss = boss1()
     fireball_ch = fireball(1)
@@ -624,8 +648,6 @@ def enter():
     bullet1 = bullet(1)
     bullet2 = bullet2(1)
     bullet3 = bullet3(1)
-    # bullet4 = bullet4(1)
-    # summon1 = summon(100,100)
     current_time = get_time()
     timecheck = 0
     timecheck2 = 0
@@ -637,10 +659,9 @@ def enter():
     kk=0
     boss_state = 0
     ch_state = 0
-    # summon1 = summon()
 
 def exit():
-    global mainch, Bg, boss,fireball_ch, fireball2_ch,Bullet,Bullet2, Bullet3, Bullet4, summon1,Hp,Summons
+    global mainch, Bg, boss,fireball_ch, fireball2_ch,Bullet,Bullet2, Bullet3, Bullet4, summon1,Hp,Summons,ui
     del(mainch)
     del(Bg)
     #del(boss)
@@ -655,6 +676,7 @@ def exit():
     # del(bullet3)
     del(Hp)
     del(Summons)
+    del(ui)
 
 def pause():
     pass
@@ -668,20 +690,17 @@ def handle_events():
         if event.type == SDL_QUIT:
             game_framework.quit()
         elif event.type == SDL_KEYDOWN and event.key == SDLK_ESCAPE:
-            game_framework.change_state(title_state)
+            game_framework.change_state(gameover_state)
         else:
             mainch.handle_event(event)
-            pass
 
 def update():
     delay(0.01)
     global fireball, fireball2, Bullet,Bullet2, Bullet3, Bullet4,summon1,frame_time, current_time, timecheck, timecheck2, timecheck3, timecheck4\
-        ,k,boss,endtime,boss_state,ch_state,timecheck5,kk
+        ,k,boss,endtime,boss_state,ch_state,timecheck5,kk,ui
 
     frame_time = get_time() - current_time
-    # frame_time = get_frame_time()
     current_time = get_time()
-    #boss_state = 0                  #0은 살아있는거 1은 죽은거
     if boss_state==0:
         timecheck += frame_time       #미사일패턴 1
         timecheck2 += frame_time      #쫄따구
@@ -691,7 +710,7 @@ def update():
     mainch.update(frame_time)
     boss.update(frame_time)
     Hp.update(mainch)
-    # summon1.update()
+    ui.update(frame_time)
 
     if mainch.hp<0:
         timecheck = 0
@@ -784,11 +803,13 @@ def update():
             if collide(i,boss):
                 boss.hp-=1
                 Fireball.remove(i)
+                ui.score+=1
         if boss_state==0:
             for j in Summons:
                 if collide(j,i):
                     Fireball.remove(i)
                     Summons.remove(j)
+                    ui.score+=1
 
     for i in Fireball2:
         if i.x < 1700:
@@ -801,11 +822,13 @@ def update():
             if collide(i,boss):
                 boss.hp-=3
                 Fireball2.remove(i)
+                ui.score+=2
         if boss_state==0:
             for j in Summons:
                 if collide(j,i):
                     Fireball2.remove(i)
                     Summons.remove(j)
+                    ui.score+=2
     if boss_state==0:
         if ch_state==0:
             for i in Bullet:
@@ -872,6 +895,7 @@ def draw():
     if boss_state==0:
         boss.draw()
     Hp.draw()
+    ui.draw()
     if boss_state==0:
         if ch_state==0:
             for i in Summons:
