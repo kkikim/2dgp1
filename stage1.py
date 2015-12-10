@@ -4,9 +4,6 @@ import os
 import time
 import math
 import random
-# f2는 5 f1은 1
-# 보스에 모든 데미지는 1
-# 보스체력 500, 캐릭터 체력 100
 
 from pico2d import *
 
@@ -32,6 +29,7 @@ Bullet3 = list()
 Bullet4 = list()
 Summons = list()
 AnimationList = None
+AnimationList2 = None
 
 fireball_ch = None     #변수
 fireball2_ch = None
@@ -45,16 +43,13 @@ sbullet = None
 current_time =None
 frame_time = None
 timecheck = None
-# stage1_boss = None
 boss = None
 summon1 = None
-
-#global mainch
 
 class DeathEffect:
     TIME_PER_ACTION = 0.5
     ACTION_PER_TIME = 1.0 / TIME_PER_ACTION
-    FRAME_PER_DEATH_ACTION = 2
+    FRAME_PER_DEATH_ACTION = 1
 
     def __init__(self, target):
         self.x = target.x
@@ -62,12 +57,12 @@ class DeathEffect:
         self.deathStartTime = get_time()
         self.isDeath = True
         self.total_frames = 0;
-        self.totla_images = 12;
+        self.totla_images = 8;
         self.frame = 0
 
         self.image = None
         if self.image ==None:
-            self.image = load_image('2d image/2dsource/damaged.png')
+            self.image = load_image('2d image/2dsource/explore.png')
 
     def isDeathEnd(self):
         return (self.frame == (self.totla_images - 1))
@@ -77,7 +72,7 @@ class DeathEffect:
         self.frame = int(self.total_frames) % self.totla_images
 
     def draw(self):
-        self.image.clip_draw(self.frame*25,0,25,25,self.x,self.y)
+        self.image.clip_draw(self.frame*63,0,63,78,self.x,self.y)
 
 class UI:
     def __init__(self):
@@ -256,8 +251,7 @@ class bullet:
         if self.image==None:
             self.image = load_image('2d image/2dsource/bullet.png')
     def __del__(self):
-        AnimationList.append(DeathEffect(self))
-
+        pass
     def update(self,frame_time) :
         distance = self.RUN_SPEED_PPS * frame_time
         self.total_frames += \
@@ -330,7 +324,7 @@ class bullet2:
         if self.image==None:
             self.image = load_image('2d image/2dsource/bullet.png')
     def __del__(self):
-        AnimationList.append(DeathEffect(self))
+        pass
 
     def update(self,frame_time) :
         distance = self.RUN_SPEED_PPS * frame_time
@@ -374,7 +368,7 @@ class bullet3:
             self.image = load_image('2d image/2dsource/bullet.png')
 
     def __del__(self):
-        AnimationList.append(DeathEffect(self))
+        pass
     def update(self,frame_time) :
         distance = self.RUN_SPEED_PPS * frame_time
         self.total_frames += \
@@ -416,7 +410,7 @@ class bullet4:
         if self.image==None:
             self.image = load_image('2d image/2dsource/bullet2.png')
     def __del__(self):
-        AnimationList.append(DeathEffect(self))
+        pass
     def update(self,frame_time) :
         distance = self.RUN_SPEED_PPS * frame_time
         self.total_frames += \
@@ -435,7 +429,7 @@ class bullet4:
         return self.x-10,self.y-10,self.x+ 10,self.y+ 10
 
 class fireball:
-    global mainch
+    global mainch, AnimationList2
 
     PIXEL_PER_METER = (10.0/0.3)                    #10 pixel 3ocm
     RUN_SPEED_KMPH = 60.0                           #KM/HOUR
@@ -469,7 +463,7 @@ class fireball:
     def get_bb(self):
         return self.x-50,self.y-50,self.x+ 50,self.y+ 50
 class fireball2:
-    global mainch
+    global mainch, AnimationList2
 
     PIXEL_PER_METER = (10.0/0.3)                    #10 pixel 3ocm
     RUN_SPEED_KMPH = 40.0                           #KM/HOUR
@@ -682,7 +676,7 @@ def collide(a, b):
 def enter():
     # open_canvas(1600,900)
     global mainch , boss, fireball_ch , fireball2_ch,shield_ch, bullet1,bullet2,bullet3,bullet4 ,current_time, timecheck,timecheck2, timecheck3,timecheck4,k,\
-    Hp,endtime,boss_state,ch_state,timecheck5,kk,ui,Bg, AnimationList
+    Hp,endtime,boss_state,ch_state,timecheck5,kk,ui,Bg, AnimationList, AnimationList2
 
     mainch = Mainch()
     Bg = background()
@@ -706,9 +700,10 @@ def enter():
     boss_state = 0
     ch_state = 0
     AnimationList = list()
+    AnimationList2 = list()
 
 def exit():
-    global mainch, Bg, boss,fireball_ch, fireball2_ch,Bullet,Bullet2, Bullet3, Bullet4, summon1,Hp,Summons,ui, AnimationList
+    global mainch, Bg, boss,fireball_ch, fireball2_ch,Bullet,Bullet2, Bullet3, Bullet4, summon1,Hp,Summons,ui, AnimationList, AnimationList2
     del(mainch)
     del(Bg)
     del(fireball_ch)
@@ -722,6 +717,7 @@ def exit():
     del(Summons)
     del(ui)
     del(AnimationList)
+    del(AnimationList2)
 
 def pause():
     pass
@@ -742,7 +738,7 @@ def handle_events():
 def update():
     delay(0.01)
     global fireball, fireball2, Bullet,Bullet2, Bullet3, Bullet4,summon1,frame_time, current_time, timecheck, timecheck2, timecheck3, timecheck4\
-        ,k,boss,endtime,boss_state,ch_state,timecheck5,kk,ui,AnimationList
+        ,k,boss,endtime,boss_state,ch_state,timecheck5,kk,ui,AnimationList, AnimationList2
 
     frame_time = get_time() - current_time
     current_time = get_time()
@@ -763,7 +759,13 @@ def update():
         if i.isDeathEnd() :
             AnimationList.remove(i)
 
+    for i in AnimationList2:
+        i.update(frame_time)
+        if i.isDeathEnd() :
+            AnimationList2.remove(i)
+
     if mainch.hp<0:
+        AnimationList.append(DeathEffect(mainch))
         timecheck = 0
         timecheck2 = 0
         timecheck3 = 0
@@ -937,14 +939,12 @@ def update():
                 if collide(i,mainch):
                     Bullet4.remove(i)
                     mainch.hp-=1
+
     if boss_state==0:
         if ch_state==0:
             for i in Summons:
                 if i.x < 1700:
                     i.update(frame_time)
-
-
-
 
 def draw():
     global boss,boss_state,ch_state, AnimationList
@@ -997,6 +997,9 @@ def draw():
 
 
     for i in AnimationList:
+        i.draw()
+
+    for i in AnimationList2:
         i.draw()
 
     update_canvas()
