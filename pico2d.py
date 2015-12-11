@@ -348,7 +348,8 @@ class Music:
         Mix_ResumeMusic()
 
     def __del__(self):
-        Mix_FreeMusic(self.music)
+        pass
+        # Mix_FreeMusic(self.music)
 
 
 

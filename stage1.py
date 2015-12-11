@@ -507,6 +507,8 @@ class Mainch:
     global fireball2_ch
     global shield_ch
 
+    fire_sound=None
+    fire_sound2 = None
     PIXEL_PER_METER = (10.0/0.3)                    #10 pixel 3ocm
     RUN_SPEED_KMPH = 40.0                           #KM/HOUR
     RUN_SPEED_MPM = (RUN_SPEED_KMPH * 1000.0/60.0)
@@ -527,6 +529,13 @@ class Mainch:
         self.state = self.RIGHT_STAND
         self.tempstate = self.RIGHT_STAND
         self.total_frames = 0.0
+
+        if self.fire_sound == None:
+            self.fire_sound = load_wav('fireball.wav')
+            self.fire_sound.set_volume(32)
+        if self.fire_sound2 == None:
+            self.fire_sound2 = load_wav('fireball2.wav')
+            self.fire_sound2.set_volume(32)
         #서있을떄
         self.standimage = load_image('2d image/2dsource/stand_right.png')
         self.standimage2 = load_image('2d image/2dsource/stand_left.png')
@@ -567,6 +576,11 @@ class Mainch:
         elif self.state == self.DOWN_RUN:
             self.y = max(150, self.y - distance-boostspeed)
         # ------------------------------------------------------------------------
+    def fire(self):
+       self.fire_sound.play()
+    def fire2(self):
+       self.fire_sound2.play()
+
 
     def handle_event(self, event):
         #    부스터키
@@ -580,19 +594,23 @@ class Mainch:
             if (event.type, event.key) == (SDL_KEYDOWN, SDLK_x):
                 fireball_ch.direction =1
                 Fireball.append(fireball(fireball_ch.direction))
+                self.fire()
         if self.state in (self.LEFT_RUN, self.LEFT_STAND ):
             if (event.type, event.key) == (SDL_KEYDOWN, SDLK_x):
                 fireball_ch.direction =0
                 Fireball.append(fireball(fireball_ch.direction))
+                self.fire()
         # 파이어볼2
         if self.state in (self.RIGHT_RUN, self.RIGHT_STAND ):
             if (event.type, event.key) == (SDL_KEYDOWN, SDLK_z):
                 fireball2_ch.direction =1
                 Fireball2.append(fireball2(fireball2_ch.direction))
+                self.fire2()
         if self.state in (self.LEFT_RUN, self.LEFT_STAND ):
             if (event.type, event.key) == (SDL_KEYDOWN, SDLK_z):
                 fireball2_ch.direction =0
                 Fireball2.append(fireball2(fireball2_ch.direction))
+                self.fire()
         #     방향키
         if (event.type, event.key) == (SDL_KEYDOWN, SDLK_LEFT):
             if self.state in (self.RIGHT_STAND,self.LEFT_STAND ,self.RIGHT_RUN, self.UP_RUN, self.DOWN_RUN):
@@ -657,9 +675,6 @@ class Mainch:
     def get_bb(self):
         return self.x-25,self.y-50,self.x+ 25,self.y+ 50
 
-def animation():
-    pass
-
 #충돌체크.
 def collide(a, b):
 
@@ -674,7 +689,6 @@ def collide(a, b):
     return True
 #create world
 def enter():
-    # open_canvas(1600,900)
     global mainch , boss, fireball_ch , fireball2_ch,shield_ch, bullet1,bullet2,bullet3,bullet4 ,current_time, timecheck,timecheck2, timecheck3,timecheck4,k,\
     Hp,endtime,boss_state,ch_state,timecheck5,kk,ui,Bg, AnimationList, AnimationList2
 
