@@ -62,7 +62,7 @@ class DeathEffect:
 
         self.image = None
         if self.image ==None:
-            self.image = load_image('2d image/2dsource/explore.png')
+            self.image = load_image('2dsource/explore.png')
 
     def isDeathEnd(self):
         return (self.frame == (self.totla_images - 1))
@@ -91,9 +91,9 @@ class hpbar:
     global mainch, boss
     def __init__(self):
         self.hp = mainch.hp*2.3
-        self.image = load_image('2d image/2dsource/HP.png')
-        self.image2 = load_image('2d image/2dsource/HPtool.png')
-        self.image3 = load_image('2d image/2dsource/skillbar.png')
+        self.image = load_image('2dsource/HP.png')
+        self.image2 = load_image('2dsource/HPtool.png')
+        self.image3 = load_image('2dsource/skillbar.png')
     def update(self,mainch):
         self.hp = mainch.hp*2.3
     def draw(self):
@@ -103,10 +103,10 @@ class hpbar:
 class background:
     bgm = None
     def __init__(self):
-        self.image = load_image('2d image/2dsource/stage2.png')
-        self.image2 = load_image('2d image/2dsource/background.png')
+        self.image = load_image('2dsource/stage2.png')
+        self.image2 = load_image('2dsource/background.png')
         if background.bgm ==  None :
-            background.bgm = load_music('2d image/2dsource/background.mp3')
+            background.bgm = load_music('2dsound/background.mp3')
             background.bgm.set_volume(60)
             background.bgm.repeat_play()
     def draw(self):
@@ -135,7 +135,7 @@ class summonbullet:
         self.angle = angle * (3.141592/180.0)
 
         if self.image==None:
-            self.image = load_image('2d image/2dsource/bullet.png')
+            self.image = load_image('2dsource/bullet.png')
 
     def update(self,frame_time) :
         distance = self.RUN_SPEED_PPS * frame_time
@@ -175,7 +175,7 @@ class summon:
 
         self.x, self.y = initx, inity
         if self.image ==None:
-            self.image = load_image('2d image/2dsource/summon1.png')
+            self.image = load_image('2dsource/summon1.png')
         self.frame = 0
         self.time =0
         self.total_frames = 0.0
@@ -249,7 +249,7 @@ class bullet:
         self.angle = angle* (3.141592 / 180.0)
         self.anglerate = 0.025
         if self.image==None:
-            self.image = load_image('2d image/2dsource/bullet.png')
+            self.image = load_image('2dsource/bullet.png')
     def __del__(self):
         pass
     def update(self,frame_time) :
@@ -279,10 +279,10 @@ class boss1:
     FRAMES_PER_ACTION = 8
 
     def __init__(self) :
-        self.hp = 10
+        self.hp = 500
         self.x, self.y = 800, 450
         if self.image ==None:
-            self.image = load_image('2d image/2dsource/boss1.png')
+            self.image = load_image('2dsource/boss1.png')
         self.frame = 0
         self.time =0
         self.total_frames = 0.0
@@ -322,7 +322,7 @@ class bullet2:
         self.angle = angle* (3.141592 / 180.0)
         self.anglerate = 0.5
         if self.image==None:
-            self.image = load_image('2d image/2dsource/bullet.png')
+            self.image = load_image('2dsource/bullet.png')
     def __del__(self):
         pass
 
@@ -365,7 +365,7 @@ class bullet3:
         self.angle = angle* (3.141592 / 180.0)
         self.anglerate = 0.5
         if self.image==None:
-            self.image = load_image('2d image/2dsource/bullet.png')
+            self.image = load_image('2dsource/bullet.png')
 
     def __del__(self):
         pass
@@ -408,7 +408,7 @@ class bullet4:
         self.angle = angle* (3.141592 / 180.0)
         self.anglerate = 0.025
         if self.image==None:
-            self.image = load_image('2d image/2dsource/bullet2.png')
+            self.image = load_image('2dsource/bullet2.png')
     def __del__(self):
         pass
     def update(self,frame_time) :
@@ -444,11 +444,11 @@ class fireball:
     def __init__(self, dir):
         self.x2, self.y2 = self.x,self.y = mainch.x, mainch.y
         self.fireballframe = 0
-        self.image = load_image('2d image/2dsource/fire_ball.png')
+        self.image = load_image('2dsource/fire_ball.png')
         self.direction = dir
         self.total_frames = 0.0
         if dir == 1 :
-            self.image = load_image('2d image/2dsource/fire_ball2.png')      #오른쪽에서 왼쪽으로 갈때
+            self.image = load_image('2dsource/fire_ball2.png')      #오른쪽에서 왼쪽으로 갈때
         elif dir == 0 :
             self.direction = -1
     def update(self,frame_time):
@@ -479,10 +479,10 @@ class fireball2:
         self.x,self.y = mainch.x, mainch.y
         self.fireballframe = 0
         self.total_frames = 0.0
-        self.image = load_image('2d image/2dsource/mini_fire_ball2.png')
+        self.image = load_image('2dsource/mini_fire_ball2.png')
         self.direction = dir
         if dir == 1 :
-            self.image = load_image('2d image/2dsource/mini_fire_ball.png')      #오른쪽에서 왼쪽으로 갈때
+            self.image = load_image('2dsource/mini_fire_ball.png')      #오른쪽에서 왼쪽으로 갈때
         elif dir == 0 :
             self.direction = -1
 
@@ -531,26 +531,26 @@ class Mainch:
         self.total_frames = 0.0
 
         if self.fire_sound == None:
-            self.fire_sound = load_wav('fireball.wav')
+            self.fire_sound = load_wav('2dsound/fireball.wav')
             self.fire_sound.set_volume(32)
         if self.fire_sound2 == None:
-            self.fire_sound2 = load_wav('fireball2.wav')
+            self.fire_sound2 = load_wav('2dsound/fireball2.wav')
             self.fire_sound2.set_volume(32)
         #서있을떄
-        self.standimage = load_image('2d image/2dsource/stand_right.png')
-        self.standimage2 = load_image('2d image/2dsource/stand_left.png')
+        self.standimage = load_image('2dsource/stand_right.png')
+        self.standimage2 = load_image('2dsource/stand_left.png')
 
         #보통 다닐때
-        self.image = load_image('2d image/2dsource/walk_foward.png')
-        self.image2 = load_image('2d image/2dsource/walk_back.png')
-        self.image3 = load_image('2d image/2dsource/walk_foward.png')
-        self.image4 = load_image('2d image/2dsource/walk_foward.png')
+        self.image = load_image('2dsource/walk_foward.png')
+        self.image2 = load_image('2dsource/walk_back.png')
+        self.image3 = load_image('2dsource/walk_foward.png')
+        self.image4 = load_image('2dsource/walk_foward.png')
 
         #대쉬상태
-        self.dashimage = load_image('2d image/2dsource/dash_foward.png')     #앞 대쉬   #대쉬 이미지
-        self.dashimage2 = load_image('2d image/2dsource/dash_back.png')      #뒤 대쉬
-        self.dashimage3 = load_image('2d image/2dsource/dash_up.png')        #윗 대쉬
-        self.dashimage4 = load_image('2d image/2dsource/dash_down.png')     #아랫 대쉬
+        self.dashimage = load_image('2dsource/dash_foward.png')     #앞 대쉬   #대쉬 이미지
+        self.dashimage2 = load_image('2dsource/dash_back.png')      #뒤 대쉬
+        self.dashimage3 = load_image('2dsource/dash_up.png')        #윗 대쉬
+        self.dashimage4 = load_image('2dsource/dash_down.png')     #아랫 대쉬
         self.dir = 1    #방향4
         self.boost = False
 

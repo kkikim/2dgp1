@@ -9,7 +9,7 @@ image = None
 
 def enter():
     global image
-    image = load_image('2d image/2dsource/gameover.png')
+    image = load_image('2dsource/gameover.png')
 
 def exit():
     global image
